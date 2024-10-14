@@ -7,17 +7,10 @@ import (
 	"io"
 	"log"
 	"os"
-	"slices"
 	"strconv"
 )
 
-func main() {
-	file, err := os.Open("./input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer file.Close()
+func parseFile(file *os.File) ([]int, error) {
 
 	reader := bufio.NewReader(file)
 
@@ -31,7 +24,7 @@ func main() {
 		if lineString != "" {
 			calories, err := strconv.Atoi(string(line))
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 			accumulator += calories
 		} else {
@@ -41,16 +34,61 @@ func main() {
 
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				break
+				return caloriesSlice, nil
 			} else {
-				log.Fatal(err)
+				return nil, err
+			}
+		}
+	}
+}
+
+func sum(numbers []int) int {
+	total := 0
+	for _, value := range numbers {
+		total += value
+	}
+
+	return total
+}
+
+func maxNElements(n int, slice []int) []int {
+	maxValues := make([]int, n)
+	for i := range maxValues {
+		maxValues[i] = 0
+	}
+
+	for _, element := range slice {
+		for i, topValue := range maxValues {
+			if element > topValue {
+				currentElement := element
+				for i != len(maxValues) {
+					aux := maxValues[i]
+					maxValues[i] = currentElement
+					currentElement = aux
+					i++
+				}
+				break
 			}
 		}
 	}
 
-	// fmt.Printf("Final slice")
-	// fmt.Printf("%v", totalCalories)
+	return maxValues
+}
 
-	maxCalories := slices.Max(caloriesSlice)
-	fmt.Printf("%v\n", maxCalories)
+func main() {
+	file, err := os.Open("./input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	caloriesPerElf, err := parseFile(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	top3Elves := maxNElements(3, caloriesPerElf)
+
+	fmt.Printf("%v\n", sum(top3Elves))
 }
