@@ -39,7 +39,7 @@ out:
 			chunk = append(chunk, string(line))
 		}
 
-		// complexity: O^∞
+		// complexity: O(n^∞)
 	badge:
 		for _, firstElfItem := range chunk[0] {
 			for _, secondElfItem := range chunk[1] {
