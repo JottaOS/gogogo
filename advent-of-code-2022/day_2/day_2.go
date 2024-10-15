@@ -23,7 +23,8 @@ import (
 
 func main() {
 
-	pointValues := map[string]int{"X": 1, "Y": 2, "Z": 3, "A": 1, "B": 2, "C": 3}
+	pointValues := map[string]int{"A": 1, "B": 2, "C": 3}
+	results := map[string]string{"A": "C", "B": "A", "C": "B"}
 
 	file, err := os.Open("./input.txt")
 	if err != nil {
@@ -38,7 +39,7 @@ func main() {
 		line, _, err := r.ReadLine()
 
 		if err != nil {
-			if(errors.Is(err, io.EOF)){
+			if errors.Is(err, io.EOF) {
 				fmt.Printf("%v\n", totalPoints)
 				break
 			}
@@ -49,20 +50,27 @@ func main() {
 		round := strings.Split(string(line), " ")
 
 		fmt.Printf("%v\n", round)
-		playerA := pointValues[round[0]]
-		playerB := pointValues[round[1]]
+		playerA := round[0]
+		result := round[1]
 
-		// check for a draw (3 points)
-		if playerA == playerB {
-			totalPoints += 3 + playerB
+		// draw
+		if result == "Y" {
+			totalPoints += 3 + pointValues[playerA]
 			continue
 		}
 
-		// if true, playerB (Me) wins (6 points)
-		if (playerA+1)%3 == playerB%3 {
-			totalPoints += playerB + 6
-		} else {
-			totalPoints += playerB
+		// defeat
+		if result == "X" {
+			playerB := results[playerA]
+			totalPoints += pointValues[playerB]
+			continue
+		}
+
+		// win
+		if result == "Z" {
+			playerB := results[results[playerA]]
+			totalPoints += 6 + pointValues[playerB]
+			continue
 		}
 
 	}
