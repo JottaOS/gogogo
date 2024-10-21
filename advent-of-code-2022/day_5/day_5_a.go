@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
+	"strings"
 )
 
 func main() {
@@ -15,32 +17,63 @@ func main() {
 	}
 
 	sc := bufio.NewScanner(file)
-	var stacks []string
+	stacks := map[int][]string{}
 
-	// primeras 8 líneas son los stacks iniciales
-	for i := 0; i < 8; i++ {
-		sc.Scan()
-		line := sc.Text()
-		fmt.Printf("%v\n", line)
-		stacks = append(stacks, line)
-	}
-
-	// Saltar las siguientes dos lineas de relleno
-	sc.Scan()
-	sc.Scan()
-
-	// leer movimientos
-	var moves [][]int
-	
+	// scan initial crates
 	for sc.Scan() {
-		var column, from, to int
-		fmt.Sscanf(sc.Text(), "move %d from %d to %d", &column, &from, &to)
 
-		move := []int {column, from, to}
-		moves = append(moves, move)
+		line := sc.Text()
+		if(line == " 1   2   3   4   5   6   7   8   9 "){
+			sc.Scan()
+			break
+		}
+
+		chars := strings.Split(line, "")
+
+		for i, char := range chars {
+			if char != " " && char != "[" && char != "]" {
+				trueIndex := i / 4
+				stacks[trueIndex] = append(stacks[trueIndex], char)
+			}
+		}
 	}
 
-	fmt.Printf("Moves: %v\n\n", moves)
-	fmt.Printf("Stacks: %v\n", stacks)
+	// reversar todos los slices
+	for _, stack := range stacks {
+		slices.Reverse(stack)
+	}
 
+	for sc.Scan() {
+		
+		var amount, from, to int
+		fmt.Sscanf(sc.Text(), "move %d from %d to %d", &amount, &from, &to)
+	
+		// obtener stacks
+		fromStack := stacks[from - 1]
+		toStack := stacks[to - 1]
+		
+		for i := 0; i < amount; i++ {
+			lastIndex := len(fromStack) - 1
+			
+			// agregar el ultimo elemento al destino
+			toStack = append(toStack, fromStack[lastIndex])
+			
+			// hacer el pop del slice de origen
+			fromStack = fromStack[:lastIndex]
+		}
+
+		// reasignar los slices modificados al map
+		stacks[from - 1] = fromStack
+		stacks[to - 1] = toStack
+	}
+
+	// última iteración para concatenar el head de cada stack
+	solution := ""
+	 for i := 0; i < len(stacks); i++ {
+		currentStack := stacks[i]
+		solution += currentStack[len(currentStack) - 1]	
+	}	
+
+	// solución final
+	fmt.Printf("%v\n", solution)
 }
